@@ -9,5 +9,9 @@ target 'Eventure' do
   pod 'Firebase/Database'
   pod 'Firebase/Auth'
   pod 'Firebase/Storage’
+  pod 'SwiftMessages'
+  pod 'Cosmos', '~> 7.0'
+  pod 'DateTimePicker'
+  pod 'LocationPicker'
 
 end

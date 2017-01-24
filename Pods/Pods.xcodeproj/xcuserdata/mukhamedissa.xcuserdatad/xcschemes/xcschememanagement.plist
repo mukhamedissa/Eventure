@@ -4,6 +4,16 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>Cosmos.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>DateTimePicker.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>GTMSessionFetcher.xcscheme</key>
 		<dict>
 			<key>isShown</key>
@@ -14,7 +24,22 @@
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>LocationPicker.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-Eventure.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>SwiftMessages-SwiftMessages.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>SwiftMessages.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
@@ -27,12 +52,37 @@
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>C052BEBFBD0AB5218CC64BA3450F6547</key>
+		<key>2F0FE1E2A5B1EF15139E10A40F05CE94</key>
 		<dict>
 			<key>primary</key>
 			<true/>
 		</dict>
-		<key>F787F2F67F20A7C52F2B7EDDE16FB4BE</key>
+		<key>6270B7E559D4DAE3057E9BC530994201</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>9FA73695D1E57996C128686ADB24DCC2</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BB3D7B369F8818CF34D73AE74825BD60</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BBFDC15656F984038A15E5F954C036CF</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>BE86BAACB32364FEA19A5C789EF8FF48</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>C052BEBFBD0AB5218CC64BA3450F6547</key>
 		<dict>
 			<key>primary</key>
 			<true/>

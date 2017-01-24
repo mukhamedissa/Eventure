@@ -1,4 +1,6 @@
 PODS:
+  - Cosmos (7.0.0)
+  - DateTimePicker (1.0.3)
   - Firebase/Auth (3.11.0):
     - Firebase/Core
     - FirebaseAuth (= 3.1.0)
@@ -44,13 +46,21 @@ PODS:
     - GoogleToolboxForMac/NSString+URLArguments (= 2.1.0)
   - GoogleToolboxForMac/NSString+URLArguments (2.1.0)
   - GTMSessionFetcher/Core (1.1.7)
+  - LocationPicker (1.0.1)
+  - SwiftMessages (3.1.2)
 
 DEPENDENCIES:
+  - Cosmos (~> 7.0)
+  - DateTimePicker
   - Firebase/Auth
   - Firebase/Database
   - Firebase/Storage
+  - LocationPicker
+  - SwiftMessages
 
 SPEC CHECKSUMS:
+  Cosmos: 2c8299147138758f6ebbb247cf1aeed77998bdf9
+  DateTimePicker: 23ca73cee22ff485e9e2fbfa4e4082845ce65e95
   Firebase: b8134e285eb33201115bc688bc5d7f112923bc1f
   FirebaseAnalytics: 9c67af0ebeb8d2146c9b4ea2616439affa947b58
   FirebaseAuth: b436e4ecebe068bf8e8c6e4e29de5756ffe7ee24
@@ -62,7 +72,9 @@ SPEC CHECKSUMS:
   GoogleSymbolUtilities: 631ee17048aa5e9ab133470d768ea997a5ef9b96
   GoogleToolboxForMac: 2b2596cbb7186865e98cadf2b1e262d851c2b168
   GTMSessionFetcher: a1f8ed39e4fe21c68957daed472c7afbcdf29166
+  LocationPicker: 010f76368610cf1e87aa54aaa1e1ec366a6e2ea3
+  SwiftMessages: 87816be9b0b6dc37ff0e84ce3ff4555144554c32
 
-PODFILE CHECKSUM: 271405e5bb076018f5677e6cc05accdba2cc2a6d
+PODFILE CHECKSUM: 87900c54e3edb0b391cca295d89e016f81a3fea7
 
 COCOAPODS: 1.1.1
