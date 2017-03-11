@@ -108,8 +108,6 @@ extension ProfileViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "EventCell", for: indexPath) as! EventItemTableViewCell
-        cell.eventRating.settings.fillMode = .precise
-        cell.eventRating.rating = Double(events[indexPath.row].rating)
         cell.eventNameLabel.text = events[indexPath.row].eventName
         cell.dateLabel.text = events[indexPath.row].timestamp
         cell.placeLabel.text = events[indexPath.row].address

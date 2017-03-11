@@ -7,13 +7,11 @@
 //
 
 import UIKit
-import Cosmos
 import Firebase
 
 class EventDetailsViewController: UIViewController {
     
     @IBOutlet weak var coverImage: UIImageView!
-    @IBOutlet weak var eventRating: CosmosView!
     @IBOutlet weak var eventNameLabel: UILabel!
     @IBOutlet weak var eventDescriptionTextView: UITextView!
     @IBOutlet weak var eventAddressLabel: UILabel!
@@ -29,8 +27,9 @@ class EventDetailsViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         loadEventDetails()
-        isEventInFavs()
+        checkEvent()
     }
 
     override func didReceiveMemoryWarning() {
@@ -60,30 +59,32 @@ class EventDetailsViewController: UIViewController {
     
     @IBAction func addToFavouritesButtonPressed(_ sender: UIButton) {
         let userId = AppUtils.getCurrentUser().uid
-        let favourite = [
-            "userId": userId,
-            "eventId": eventId!
-            ] as [String : Any]
-        
-        let newFavRef = favouritesRef.childByAutoId()
-        newFavRef.setValue(favourite)
-        
-        addToFavButton.setTitle("In favourites", for: .normal)
-        addToFavButton.isEnabled = false
+        if sender.titleLabel?.text == "Add to favourites" {
+            let favourite = [
+                "userId": userId,
+                "eventId": eventId!
+                ] as [String : Any]
+            
+            let newFavRef = favouritesRef.childByAutoId()
+            newFavRef.setValue(favourite)
+            
+            addToFavButton.setTitle("Remove from favourites", for: .normal)
+        } else {
+            removeFromFavs()
+        }
         
     }
     
     func loadEventDetails() {
         eventsRef.child(eventId!).observeSingleEvent(of: .value, with: { (snapshot) in
             let event = Event(snapshot: snapshot)
-            if event.addedByUser != AppUtils.getCurrentUser().uid {
+            if !AppUtils.isLoggedIn() || event.addedByUser != AppUtils.getCurrentUser().uid {
                 self.navigationItem.rightBarButtonItem = nil
             }
             self.eventNameLabel.text = event.eventName
             self.eventDescriptionTextView.text = event.eventDescription
             self.eventAddressLabel.text = event.address
             self.eventDateLabel.text = event.timestamp
-            self.eventRating.rating = Double(event.rating)
             self.loadPhoto(url: event.photoId!)
         }) { (error) in
             print(error.localizedDescription)
@@ -112,20 +113,52 @@ class EventDetailsViewController: UIViewController {
         }
     }
     
-    func isEventInFavs() {
-        favouritesRef.queryOrdered(byChild: "userId").queryEqual(toValue: AppUtils.getCurrentUser().uid).observe(.value, with: { snapshot in
+    func checkEvent() {
+        
+        if !AppUtils.isLoggedIn() {
+            self.addToFavButton.isHidden = true
+            return
+        }
+        
+        favouritesRef
+            .queryOrdered(byChild: "userId")
+            .queryEqual(toValue: AppUtils.getCurrentUser().uid)
+            .observe(.value, with: { snapshot in
             
             for item in snapshot.children {
                 let firSnapshot = item as! FIRDataSnapshot
                 let snapshotValue = firSnapshot.value as! [String: AnyObject]
                 if (snapshotValue["eventId"] as! String) == self.eventId! {
-                    self.addToFavButton.setTitle("In favourites", for: .normal)
-                    self.addToFavButton.isEnabled = false
+                    self.addToFavButton.setTitle("Remove from favourites", for: .normal)
                 }
             }
             
         })
 
+    }
+    
+    func removeFromFavs() {
+        favouritesRef
+            .queryOrdered(byChild: "userId")
+            .queryEqual(toValue: AppUtils.getCurrentUser().uid)
+            .observe(.value, with: { snapshot in
+                
+                for item in snapshot.children {
+                    let firSnapshot = item as! FIRDataSnapshot
+                    let snapshotValue = firSnapshot.value as! [String: AnyObject]
+                    if (snapshotValue["eventId"] as! String) == self.eventId! {
+                        self.favouritesRef.child(firSnapshot.key).removeValue { (error, ref) in
+                            if error != nil {
+                                print("TestError \(error)")
+                                return
+                            }
+                            
+                            self.addToFavButton.setTitle("Add to favourites", for: .normal)
+                        }
+                    }
+                }
+                
+            })
     }
 
 }

@@ -13,5 +13,7 @@ target 'Eventure' do
   pod 'Cosmos', '~> 7.0'
   pod 'DateTimePicker'
   pod 'LocationPicker'
+  pod 'Fabric'
+  pod 'Crashlytics'
 
 end

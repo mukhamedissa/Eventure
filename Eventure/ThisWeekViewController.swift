@@ -1,23 +1,23 @@
 //
-//  FavouritesViewController.swift
+//  ThisWeekViewController.swift
 //  Eventure
 //
-//  Created by Mukhamed Issa on 1/18/17.
+//  Created by Mukhamed Issa on 3/11/17.
 //  Copyright © 2017 Mukhamed Issa. All rights reserved.
 //
 
 import UIKit
 import Firebase
+import Crashlytics
 
-class FavouritesViewController: UIViewController {
+class ThisWeekViewController: UIViewController {
     
-    let favsToDetails = "FavouritesToDetails"
-    let favsToLogin = "FavsToLogin"
-    let favsToAdd = "FavsToAdd"
-    let favsToProfile = "FavsToProfile"
+    let thisWeekToDetails = "ThisWeekToDetails"
+    let thisWeekToLogin = "ThisWeekToLogin"
+    let thisWeekToAdd = "ThisWeekToAdd"
+    let thisWeekToProfile = "ThisWeekToProfile"
     
     lazy var eventsRef: FIRDatabaseReference = FIRDatabase.database().reference().child("events")
-    lazy var favouritesRef: FIRDatabaseReference = FIRDatabase.database().reference().child("favourites")
     lazy var storageRef: FIRStorageReference = FIRStorage.storage().reference(forURL: "gs://eventure-52ae7.appspot.com")
     
     lazy var refreshControl: UIRefreshControl = {
@@ -26,50 +26,44 @@ class FavouritesViewController: UIViewController {
         
         return refreshControl
     }()
-
-    @IBOutlet weak var favouritesTableView: UITableView!
-    @IBOutlet weak var searchBar: UISearchBar!
-    
-    
-    var activityIndicator: UIActivityIndicatorView?
     
     var events = [Event]()
     
+    @IBOutlet weak var thisWeekTableView: UITableView!
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+    var activityIndicator: UIActivityIndicatorView?
+    
     override func viewWillAppear(_ animated: Bool) {
-        if let index = self.favouritesTableView.indexPathForSelectedRow {
-            self.favouritesTableView.deselectRow(at: index, animated: true)
+        if let index = self.thisWeekTableView.indexPathForSelectedRow {
+            self.thisWeekTableView.deselectRow(at: index, animated: true)
         }
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        goToLoginVCIfNeed()
         initUIElements()
+        getEvents(query: nil)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
     }
     
-    func goToLoginVCIfNeed() {
-        if !AppUtils.isLoggedIn() {
-            performSegue(withIdentifier: favsToLogin, sender: nil)
-        } else {
-            getFavourites(query: nil)
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.destination.isKind(of: EventDetailsViewController.self) {
+            let eventDetailsVC = segue.destination as! EventDetailsViewController
+            eventDetailsVC.eventId = sender as? String
         }
     }
     
-    func handleRefresh(refreshControl: UIRefreshControl) {
-        getFavourites(query: nil)
-    }
-    
     func initUIElements() {
-        favouritesTableView.delegate = self
-        favouritesTableView.dataSource = self
-        favouritesTableView.addSubview(self.refreshControl)
+        thisWeekTableView.delegate = self
+        thisWeekTableView.dataSource = self
+        thisWeekTableView.addSubview(self.refreshControl)
         searchBar.delegate = self
-        favouritesTableView.tableFooterView = UIView()
+        thisWeekTableView.tableFooterView = UIView()
         
         activityIndicator = UIActivityIndicatorView(activityIndicatorStyle: UIActivityIndicatorViewStyle.gray)
         
@@ -82,66 +76,53 @@ class FavouritesViewController: UIViewController {
         
     }
     
-    @IBAction func didProfileButtonPressed(_ sender: UIBarButtonItem) {
-        let segueIdentifier = AppUtils.isLoggedIn() ? favsToProfile : favsToLogin
-        self.performSegue(withIdentifier: segueIdentifier, sender: nil)
-    }
-    
     @IBAction func didAddButtonPressed(_ sender: UIBarButtonItem) {
-        let segueIdentifier = AppUtils.isLoggedIn() ? favsToAdd : favsToLogin
+        let segueIdentifier = AppUtils.isLoggedIn() ? thisWeekToAdd : thisWeekToLogin
+        print("Identifierr \(segueIdentifier)")
         self.performSegue(withIdentifier: segueIdentifier, sender: nil)
     }
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.destination.isKind(of: EventDetailsViewController.self) {
-            let eventDetailsVC = segue.destination as! EventDetailsViewController
-            eventDetailsVC.eventId = sender as? String
-        }
+    
+    @IBAction func didProfileButtonPressed(_ sender: UIBarButtonItem) {
+        let segueIdentifier = AppUtils.isLoggedIn() ? thisWeekToProfile : thisWeekToLogin
+        self.performSegue(withIdentifier: segueIdentifier, sender: nil)
     }
     
-    func getFavourites(query: String?) {
-        
-        events.removeAll()
+    func handleRefresh(refreshControl: UIRefreshControl) {
+        getEvents(query: nil)
+    }
+    
+    func getEvents(query: String?) {
+        let queryRef = query == nil ? eventsRef : eventsRef.queryOrdered(byChild: "eventName").queryStarting(atValue: query!).queryEnding(atValue: query! + "\u{f8ff}")
         activityIndicator?.startAnimating()
-        favouritesRef.queryOrdered(byChild: "userId").queryEqual(toValue: AppUtils.getCurrentUser().uid).observe(.value, with: {snapshot in
-            
+        queryRef.observe(.value, with: { snapshot in
+            var items = [Event]()
             self.activityIndicator?.stopAnimating()
             self.refreshControl.endRefreshing()
             if snapshot.childrenCount != 0 {
-                self.favouritesTableView.backgroundView = nil
-                self.favouritesTableView.separatorStyle = .singleLine
+                self.thisWeekTableView.backgroundView = nil
+                self.thisWeekTableView.separatorStyle = .singleLine
             } else {
-                TableViewHelper.EmptyMessage(tableView: self.favouritesTableView)
+                TableViewHelper.EmptyMessage(tableView: self.thisWeekTableView)
             }
-            
             for item in snapshot.children {
-                let firSnapshot = item as! FIRDataSnapshot
-                let snapshotValue = firSnapshot.value as! [String: AnyObject]
-                let eventId = snapshotValue["eventId"] as! String
-                print(eventId)
-                self.eventsRef.queryOrderedByKey().queryEqual(toValue: eventId).observe(.value, with: { snapshot in
-                    
-                    for item in snapshot.children {
-                        let eventItem = Event(snapshot: item as! FIRDataSnapshot)
-                        if query != nil {
-                            if eventItem.eventName.lowercased().contains((query?.lowercased())!) {
-                                self.events.append(eventItem)
-                            }
-                        } else {
-                            self.events.append(eventItem)
-                        }
-                    }
-                    
-                    self.favouritesTableView.reloadData()
-                    
-                })
+                
+                let eventItem = Event(snapshot: item as! FIRDataSnapshot)
+                let eventDate = AppUtils.dateFromString(stringDate: eventItem.timestamp)
+                if AppUtils.isDateInCurrentWeek(date: eventDate) {
+                    items.append(eventItem)
+                }
             }
             
-            
+            if items.count == 0 {
+                TableViewHelper.EmptyMessage(tableView: self.thisWeekTableView)
+            }
+            self.events = items
+            self.thisWeekTableView.reloadData()
         })
     }
 }
 
-extension FavouritesViewController: UITableViewDelegate, UITableViewDataSource {
+extension ThisWeekViewController: UITableViewDelegate, UITableViewDataSource {
     
     func numberOfSections(in tableView: UITableView) -> Int {
         return 1
@@ -180,23 +161,22 @@ extension FavouritesViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let cell = tableView.cellForRow(at: tableView.indexPathForSelectedRow!) as? EventItemTableViewCell
-        self.performSegue(withIdentifier: favsToDetails, sender: cell?.id)
+        self.performSegue(withIdentifier: thisWeekToDetails, sender: cell?.id)
     }
     
 }
 
-extension FavouritesViewController: UISearchBarDelegate {
+extension ThisWeekViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let text = searchBar.text
-        self.getFavourites(query: text!)
-        
+        self.getEvents(query: text!)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         
         if searchText.isEmpty {
-            self.getFavourites(query: nil)
+            self.getEvents(query: nil)
         }
     }
 }

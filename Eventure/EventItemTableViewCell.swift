@@ -7,13 +7,11 @@
 //
 
 import UIKit
-import Cosmos
 
 class EventItemTableViewCell: UITableViewCell {
 
     @IBOutlet weak var eventThumbnail: UIImageView!
     @IBOutlet weak var eventNameLabel: UILabel!
-    @IBOutlet weak var eventRating: CosmosView!
     @IBOutlet weak var dateLabel: UILabel!
     @IBOutlet weak var placeLabel: UILabel!
     

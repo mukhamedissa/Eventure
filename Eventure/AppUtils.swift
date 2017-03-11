@@ -8,6 +8,7 @@
 
 import Foundation
 import Firebase
+import Crashlytics
 
 class AppUtils {
     
@@ -26,4 +27,39 @@ class AppUtils {
         return UIColor(red:red, green:green, blue:blue, alpha:CGFloat(alpha))
     }
     
+    static func dateFromString(stringDate: String) -> Date {
+        return getDateFormatter().date(from: stringDate)!
+    }
+    
+    static func stringFromDate(date: Date) -> String {
+        return getDateFormatter().string(from: date)
+    }
+    
+    static func getDateFormatter() -> DateFormatter {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yyyy HH:mm"
+        
+        return formatter
+    }
+    
+    static func isDateInCurrentWeek(date: Date) -> Bool {
+        return (Date().startOfWeek...Date().endOfWeek).contains(date)
+    }
+    
+    static func testCrash() {
+        Crashlytics.sharedInstance().crash()
+    }
+    
+}
+
+extension Date {
+    var startOfWeek: Date {
+        let date = Calendar.current.date(from: Calendar.current.dateComponents([.yearForWeekOfYear, .weekOfYear], from: self))!
+        let dslTimeOffset = NSTimeZone.local.daylightSavingTimeOffset(for: date)
+        return date.addingTimeInterval(dslTimeOffset)
+    }
+    
+    var endOfWeek: Date {
+        return Calendar.current.date(byAdding: .second, value: 604799, to: self.startOfWeek)!
+    }
 }

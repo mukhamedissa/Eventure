@@ -28,6 +28,13 @@ class EventsListViewController: UIViewController {
     lazy var eventsRef: FIRDatabaseReference = FIRDatabase.database().reference().child("events")
     lazy var storageRef: FIRStorageReference = FIRStorage.storage().reference(forURL: "gs://eventure-52ae7.appspot.com")
     
+    lazy var refreshControl: UIRefreshControl = {
+        let refreshControl = UIRefreshControl()
+        refreshControl.addTarget(self, action: #selector(self.handleRefresh), for: UIControlEvents.valueChanged)
+        
+        return refreshControl
+    }()
+    
     override func viewWillAppear(_ animated: Bool) {
         if let index = self.eventsTableView.indexPathForSelectedRow {
             self.eventsTableView.deselectRow(at: index, animated: true)
@@ -65,6 +72,7 @@ class EventsListViewController: UIViewController {
     func initUIElements() {
         eventsTableView.delegate = self
         eventsTableView.dataSource = self
+        eventsTableView.addSubview(self.refreshControl)
         searchBar.delegate = self
         eventsTableView.tableFooterView = UIView()
         
@@ -79,13 +87,18 @@ class EventsListViewController: UIViewController {
 
     }
     
+    func handleRefresh(refreshControl: UIRefreshControl) {
+        getEvents(query: nil)
+    }
+    
     func getEvents(query: String?) {
         
-        let queryRef = query == nil ? eventsRef : eventsRef.queryOrdered(byChild: "eventName").queryStarting(atValue: query!.lowercased()).queryEnding(atValue: query!.lowercased() + "\u{f8ff}")
+        let queryRef = query == nil ? eventsRef : eventsRef.queryOrdered(byChild: "eventName").queryStarting(atValue: query!).queryEnding(atValue: query! + "\u{f8ff}")
         activityIndicator?.startAnimating()
         queryRef.observe(.value, with: { snapshot in
             var items = [Event]()
             self.activityIndicator?.stopAnimating()
+            self.refreshControl.endRefreshing()
             if snapshot.childrenCount != 0 {
                 self.eventsTableView.backgroundView = nil
                 self.eventsTableView.separatorStyle = .singleLine
@@ -116,8 +129,6 @@ extension EventsListViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "EventCell", for: indexPath) as! EventItemTableViewCell
-        cell.eventRating.settings.fillMode = .precise
-        cell.eventRating.rating = Double(events[indexPath.row].rating)
         cell.eventNameLabel.text = events[indexPath.row].eventName
         cell.dateLabel.text = events[indexPath.row].timestamp
         cell.placeLabel.text = events[indexPath.row].address
@@ -154,10 +165,13 @@ extension EventsListViewController: UISearchBarDelegate {
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let text = searchBar.text
-        if (text?.isEmpty)! {
+        self.getEvents(query: text!)
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        if searchText.isEmpty {
             self.getEvents(query: nil)
-        } else {
-            self.getEvents(query: text!)
         }
     }
 }

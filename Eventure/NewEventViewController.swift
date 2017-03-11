@@ -24,6 +24,7 @@ class NewEventViewController: UIViewController, UIImagePickerControllerDelegate,
     
     var placeholderLabel: UILabel!
     var currentDate: Date?
+    var currentDateString: String?
     var location: Location? {
         didSet {
             locationLabel.text = location.flatMap({ $0.title }) ?? "No location selected"
@@ -62,6 +63,7 @@ class NewEventViewController: UIViewController, UIImagePickerControllerDelegate,
         }
         
     }
+    
     @IBAction func didChooseDateButtonPressed(_ sender: UIButton) {
         currentDate = Date()
         let min = Date().addingTimeInterval(-60 * 60 * 24 * 4)
@@ -72,9 +74,8 @@ class NewEventViewController: UIViewController, UIImagePickerControllerDelegate,
         picker.todayButtonTitle = "Today"
         picker.completionHandler = { date in
             self.currentDate = date
-            let formatter = DateFormatter()
-            formatter.dateFormat = "dd/MM/YYYY HH:mm"
-            self.dateLabel.text = "Date: \(formatter.string(from: date))"
+            self.currentDateString = AppUtils.stringFromDate(date: date)
+            self.dateLabel.text = "Date: \(self.currentDateString!)"
         }
     }
     
@@ -156,7 +157,7 @@ class NewEventViewController: UIViewController, UIImagePickerControllerDelegate,
         let description = descriptionTextField.text
         let eventLocation = ["lat": Double((self.location?.coordinate.latitude)!), "lng": Double((self.location?.coordinate.longitude)!)]
         let user = AppUtils.getCurrentUser().uid
-        let date = dateLabel.text
+        let date = self.currentDateString!
         let address = self.location?.address
         let event = [
             "eventName": eventName!,
@@ -165,7 +166,7 @@ class NewEventViewController: UIViewController, UIImagePickerControllerDelegate,
             "photoId": photoUrl,
             "addedByUser": user,
             "rating": 0.0,
-            "timestamp": date!,
+            "timestamp": date,
             "address": address!
         ] as [String : Any]
         
